@@ -1,0 +1,90 @@
+[gd_scene load_steps=16 format=3 uid="uid://c0x0ffln0jbfn"]
+
+[ext_resource type="Script" path="res://World.gd" id="1_cpquy"]
+[ext_resource type="Script" path="res://terrain.gd" id="2_w0rr6"]
+[ext_resource type="Script" path="res://player.gd" id="3_skeix"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_kjfmi"]
+frequency = 0.003
+
+[sub_resource type="VoxelGeneratorNoise2D" id="VoxelGeneratorNoise2D_verch"]
+channel = 0
+height_start = 0.0
+noise = SubResource("FastNoiseLite_kjfmi")
+
+[sub_resource type="VoxelBlockyModel" id="VoxelBlockyModel_mpkvn"]
+
+[sub_resource type="VoxelBlockyModel" id="VoxelBlockyModel_lwap7"]
+geometry_type = 1
+collision_aabbs = [AABB(0, 0, 0, 1, 1, 1)]
+cube_geometry_padding_y = null
+cube_tiles_left = Vector2(0, 0)
+cube_tiles_right = Vector2(0, 0)
+cube_tiles_bottom = Vector2(0, 0)
+cube_tiles_top = Vector2(0, 0)
+cube_tiles_back = Vector2(0, 0)
+cube_tiles_front = Vector2(0, 0)
+collision_enabled_0 = true
+
+[sub_resource type="VoxelBlockyLibrary" id="VoxelBlockyLibrary_mpxro"]
+voxels/0 = SubResource("VoxelBlockyModel_mpkvn")
+voxels/1 = SubResource("VoxelBlockyModel_lwap7")
+
+[sub_resource type="VoxelMesherBlocky" id="VoxelMesherBlocky_ks3qs"]
+library = SubResource("VoxelBlockyLibrary_mpxro")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_m7het"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ddrur"]
+
+[sub_resource type="PhysicalSkyMaterial" id="PhysicalSkyMaterial_tn1d8"]
+rayleigh_color = Color(0.490196, 0.631373, 1, 1)
+
+[sub_resource type="Sky" id="Sky_s6jb1"]
+sky_material = SubResource("PhysicalSkyMaterial_tn1d8")
+radiance_size = 6
+
+[sub_resource type="Environment" id="Environment_axmeo"]
+background_mode = 2
+sky = SubResource("Sky_s6jb1")
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_48cdo"]
+properties/0/path = NodePath("DirectionalLight3D:rotation")
+properties/0/spawn = true
+properties/0/sync = true
+
+[node name="Root" type="Node3D"]
+script = ExtResource("1_cpquy")
+
+[node name="VoxelTerrain" type="VoxelTerrain" parent="."]
+generator = SubResource("VoxelGeneratorNoise2D_verch")
+mesher = SubResource("VoxelMesherBlocky_ks3qs")
+max_view_distance = 512
+material_override = SubResource("StandardMaterial3D_m7het")
+automatic_loading_enabled = false
+run_stream_in_editor = false
+mesh_block_size = 32
+script = ExtResource("2_w0rr6")
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 200, 0)
+slide_on_ceiling = false
+script = ExtResource("3_skeix")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+shape = SubResource("CapsuleShape3D_ddrur")
+
+[node name="Camera3D" type="Camera3D" parent="CharacterBody3D"]
+
+[node name="VoxelViewer" type="VoxelViewer" parent="CharacterBody3D"]
+view_distance = 512
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_axmeo")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.0997019, 0.995017, 0, -0.995017, 0.0997019, 0, 0, 0)
+sky_mode = 2
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_48cdo")
